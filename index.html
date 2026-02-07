@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>ARCCODE - Ultimate Hub</title>
+    <title>ARCCODE - USDC Hub</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -14,22 +14,18 @@
 </head>
 <body class="p-6 md:p-10">
     <div class="max-w-6xl mx-auto flex justify-between items-center mb-16">
-        <h1 class="text-4xl font-black text-sky-400 uppercase tracking-tighter italic">Arc<span class="text-white">code</span></h1>
+        <h1 class="text-4xl font-black text-sky-400 uppercase tracking-tighter">Arc<span class="text-white">code</span></h1>
         <div class="flex gap-4">
-            <button id="withdrawBtn" class="hidden px-4 py-2 bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase">Withdraw Admin</button>
-            <button id="connectBtn" class="px-8 py-2 bg-white text-black rounded-xl font-bold uppercase text-xs">Kết nối ví</button>
+            <button id="withdrawBtn" class="hidden px-4 py-2 bg-red-500/20 text-red-500 border border-red-500/30 rounded-xl text-[10px] font-bold uppercase">Withdraw Fund</button>
+            <button id="connectBtn" class="px-8 py-2 bg-white text-black rounded-xl font-bold uppercase text-xs hover:bg-sky-400 transition">Kết nối ví</button>
         </div>
     </div>
 
     <div id="ui" class="hidden max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div class="lg:col-span-1 space-y-8 sticky-left">
-            <div class="arc-glass p-10 rounded-[2.5rem] border-t-2 border-sky-500/30 text-center">
-                <span class="text-[9px] text-sky-400 font-bold uppercase block mb-8 opacity-50 tracking-widest">Logic Engine</span>
-                <button id="btnLogic" class="w-full bg-sky-500 text-white py-8 rounded-2xl font-black text-xl italic uppercase">Deploy Logic</button>
-            </div>
             <div class="arc-glass p-10 rounded-[2.5rem] border-t-2 border-indigo-500/30 text-center">
-                <span class="text-[9px] text-indigo-400 font-bold uppercase block mb-8 opacity-50 tracking-widest">Asset Engine</span>
-                <button id="btnAsset" class="w-full bg-indigo-600 text-white py-8 rounded-2xl font-black text-xl italic uppercase">Create Token</button>
+                <span class="text-[9px] text-indigo-400 font-bold uppercase block mb-8 opacity-50 tracking-widest italic">Asset Engine (0.1 USDC Fee)</span>
+                <button id="btnAsset" class="w-full bg-indigo-600 text-white py-8 rounded-2xl font-black text-xl italic uppercase tracking-tighter shadow-lg shadow-indigo-500/20">Create Token</button>
             </div>
         </div>
 
@@ -40,17 +36,9 @@
     </div>
 
     <script>
-        const FACTORY_ADDRESS = "0x93d640e1e5810490F400ab1BF92C2A3cf3c88C91"; 
+        const FACTORY_ADDRESS = "0x4Fd782e77754e3e6B04a9A1c0d6868D769B45dde";
         const ADMIN_WALLET = "0xEDc57f4a8c91666e25F56dEbE4a22D979943690E".toLowerCase();
         const USDC_ADDRESS = "0x3600000000000000000000000000000000000000"; //
-
-        const ABI = [
-            "function deployLogicWithPermit(string memory _text, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public",
-            "function deployAssetWithPermit(string memory _n, string memory _s, uint256 _q, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public",
-            "function getCount() public view returns (uint256)",
-            "function getEntity(uint256 i) public view returns (address)",
-            "function withdraw(address _token) public"
-        ];
 
         let provider, signer, factoryContract;
 
@@ -59,7 +47,7 @@
                 provider = new ethers.BrowserProvider(window.ethereum);
                 await provider.send("eth_requestAccounts", []);
                 signer = await provider.getSigner();
-                factoryContract = new ethers.Contract(FACTORY_ADDRESS, ABI, signer);
+                factoryContract = new ethers.Contract(FACTORY_ADDRESS, [...ABI...], signer);
                 const user = (await signer.getAddress()).toLowerCase();
                 document.getElementById('ui').classList.remove('hidden');
                 document.getElementById('connectBtn').innerText = user.slice(0,6)+"..."+user.slice(-4);
@@ -67,17 +55,21 @@
             }
         };
 
-        async function handleAction(type) {
-            const btn = type === 'logic' ? document.getElementById('btnLogic') : document.getElementById('btnAsset');
+        // KÍCH HOẠT VÍ TRỪ PHÍ USDC
+        document.getElementById('btnAsset').onclick = async () => {
+            const btn = document.getElementById('btnAsset');
             try {
-                btn.innerText = "SIGNING...";
+                btn.innerText = "CALCULATING FEE..."; //
                 btn.disabled = true;
 
                 const userAddr = await signer.getAddress();
                 const deadline = Math.floor(Date.now() / 1000) + 3600;
+                
+                // Lấy Nonce để Metamask hiện bảng ký tên
                 const usdc = new ethers.Contract(USDC_ADDRESS, ["function nonces(address) view returns (uint256)"], provider);
                 const nonce = await usdc.nonces(userAddr);
 
+                // HIỆN VÍ ĐỂ KÝ PERMIT
                 const domain = { name: "USDC", version: "2", chainId: 2712, verifyingContract: USDC_ADDRESS };
                 const types = { Permit: [
                     { name: "owner", type: "address" }, { name: "spender", type: "address" },
@@ -85,26 +77,16 @@
                 ]};
                 const message = { owner: userAddr, spender: FACTORY_ADDRESS, value: 100000, nonce: nonce, deadline: deadline };
                 
-                const signature = await signer.signTypedData(domain, types, message); // HIỆN VÍ ĐỂ KÝ
+                const signature = await signer.signTypedData(domain, types, message);
                 const sig = ethers.Signature.from(signature);
 
                 btn.innerText = "SENDING...";
-                const tx = type === 'logic' 
-                    ? await factoryContract.deployLogicWithPermit("INFO", deadline, sig.v, sig.r, sig.s)
-                    : await factoryContract.deployAssetWithPermit("ZKO", "ZK", 1000000, deadline, sig.v, sig.r, sig.s);
-                
+                const tx = await factoryContract.deployAssetWithPermit("ZKO", "ZK", 1000000, deadline, sig.v, sig.r, sig.s);
                 await tx.wait();
-                alert("Thành công!");
-                btn.innerText = type === 'logic' ? "Deploy Logic" : "Create Token";
-                btn.disabled = false;
-            } catch (e) { alert("Lỗi!"); btn.disabled = false; }
-        }
 
-        document.getElementById('btnLogic').onclick = () => handleAction('logic');
-        document.getElementById('btnAsset').onclick = () => handleAction('asset');
-        document.getElementById('withdrawBtn').onclick = async () => {
-            const target = prompt("Token Addr (blank for ARC):", USDC_ADDRESS);
-            await factoryContract.withdraw(target === "" ? "0x0000000000000000000000000000000000000000" : target);
+                alert("Deployment Successful!");
+                btn.innerText = "Create Token"; btn.disabled = false;
+            } catch (e) { alert("Lỗi!"); btn.disabled = false; }
         };
     </script>
 </body>

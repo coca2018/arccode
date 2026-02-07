@@ -2,53 +2,63 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>ARCCODE - Dual Engine Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCCODE - Web3 Gateway</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tsparticles/2.12.0/tsparticles.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #010409; color: #fff; font-family: 'Space Grotesk', sans-serif; }
+        body { background: #010409; color: #fff; font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
         #tsparticles { position: fixed; width: 100%; height: 100%; z-index: -1; }
-        .arc-glass { background: rgba(13, 17, 23, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(56, 189, 248, 0.1); }
-        .arc-gradient { background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .arc-glass { background: rgba(13, 17, 23, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(56, 189, 248, 0.1); }
+        .gradient-text { background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="p-6 md:p-10">
+<body class="min-h-screen flex flex-col items-center p-4 md:p-8">
     <div id="tsparticles"></div>
 
-    <div class="max-w-6xl mx-auto flex justify-between items-center mb-16">
-        <h1 class="text-5xl font-black arc-gradient uppercase">Arc<span class="text-white">code</span></h1>
-        <div class="flex gap-4">
-            <button id="withdrawBtn" class="hidden px-4 py-2 bg-red-500/20 text-red-500 border border-red-500 rounded-xl text-[10px] font-bold uppercase hover:bg-red-500 hover:text-white transition">Withdraw</button>
-            <button id="connectBtn" class="px-8 py-3 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-sky-400 transition">Kết nối ví</button>
+    <div class="max-w-6xl w-full flex flex-col md:flex-row justify-between items-center mt-8 mb-16 z-10 gap-6">
+        <h1 class="text-6xl font-black tracking-tighter uppercase">
+            <span class="gradient-text">Arc<span class="text-white">code</span></span>
+        </h1>
+        <div class="flex gap-4 items-center flex-wrap justify-center">
+            <a href="https://faucet.circle.com/" target="_blank" class="text-[10px] px-3 py-1.5 rounded-lg border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10 transition uppercase tracking-widest font-bold">
+                Get Gas (Faucet) ⚡
+            </a>
+            <button id="withdrawBtn" class="hidden text-[10px] px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition uppercase tracking-widest font-bold">
+                Withdraw Fund 💰
+            </button>
+            <button id="connectBtn" class="px-6 py-2 bg-white text-slate-950 rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-sky-400 transition-all shadow-lg shadow-white/5">
+                KẾT NỐI VÍ
+            </button>
         </div>
     </div>
 
-    <div id="uiContainer" class="hidden max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-20">
-        <div class="arc-glass p-12 rounded-[3.5rem] border-t-4 border-t-sky-500 text-center">
-            <span class="text-[10px] text-sky-400 font-bold uppercase tracking-widest mb-10 block">Logic Engine</span>
-            <button id="btnLogic" class="w-full py-16 bg-sky-500 text-black rounded-[2.5rem] font-black text-3xl uppercase italic tracking-tighter hover:scale-105 transition shadow-lg shadow-sky-500/20">
-                Deploy Contract
-            </button>
-            <p class="mt-8 text-slate-500 text-[10px] uppercase tracking-widest leading-relaxed">Khởi tạo Logic Smart Contract cơ bản</p>
+    <div id="uiContainer" class="hidden max-w-6xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8 z-10 mb-16 animate-in fade-in slide-in-from-bottom-10 duration-700">
+        <div class="lg:col-span-1 space-y-6 flex flex-col justify-center">
+            <div class="arc-glass p-8 rounded-[2.5rem] border-t-2 border-t-sky-500/30 text-center">
+                <span class="text-[9px] text-sky-400 font-bold uppercase tracking-[0.3em] mb-6 block opacity-50">Logic Engine</span>
+                <button id="btnLogic" class="w-full bg-sky-500 text-white py-6 rounded-2xl font-black text-xl hover:scale-[1.02] transition-all uppercase italic tracking-tighter">
+                    Deploy Logic
+                </button>
+            </div>
+
+            <div class="arc-glass p-8 rounded-[2.5rem] border-t-2 border-indigo-500/30 text-center">
+                <span class="text-[9px] text-indigo-400 font-bold uppercase tracking-[0.3em] mb-6 block opacity-50">Asset Engine (Random)</span>
+                <button id="btnAsset" class="w-full bg-indigo-600 text-white py-6 rounded-2xl font-black text-xl hover:scale-[1.02] transition-all uppercase italic tracking-tighter shadow-[0_0_30px_rgba(99,102,241,0.2)]">
+                    Create Token
+                </button>
+            </div>
         </div>
 
-        <div class="arc-glass p-12 rounded-[3.5rem] border-t-4 border-t-indigo-500 text-center">
-            <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-10 block">Asset Engine</span>
-            <button id="btnAsset" class="w-full py-16 bg-indigo-600 text-white rounded-[2.5rem] font-black text-3xl uppercase italic tracking-tighter hover:scale-105 transition shadow-lg shadow-indigo-500/20">
-                Create Token
-            </button>
-            <p class="mt-8 text-slate-500 text-[10px] uppercase tracking-widest leading-relaxed">Phát hành Token ERC-20 ngẫu nhiên vô tận</p>
+        <div class="lg:col-span-2 arc-glass rounded-[3rem] p-10 min-h-[450px]">
+            <div class="flex justify-between items-center mb-8 px-2">
+                <h2 class="text-xl font-bold uppercase italic opacity-40">Live Activity</h2>
+                <div id="totalCount" class="text-7xl font-black text-sky-400 opacity-10">0</div>
+            </div>
+            <div id="historyList" class="space-y-4 font-mono"></div>
         </div>
-    </div>
-
-    <div class="max-w-6xl mx-auto arc-glass rounded-[3.5rem] p-10">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-xl font-bold uppercase italic opacity-30 tracking-widest">Global Streams</h2>
-            <div id="totalCount" class="text-6xl font-black text-sky-500/10">0</div>
-        </div>
-        <div id="historyList" class="space-y-4 font-mono"></div>
     </div>
 
     <script>
@@ -68,37 +78,62 @@
         const mid = ["Arc", "Matrix", "Chain", "Vortex", "Cloud", "Link", "Space", "Core", "Delta", "Pulse"];
         const sfx = ["Genesis", "Network", "Protocol", "Asset", "Token", "Engine", "System", "Whale", "Nodes", "X"];
 
+        tsParticles.load("tsparticles", { particles: { number: { value: 40 }, color: { value: "#38bdf8" }, move: { enable: true, speed: 0.5 }, opacity: { value: 0.1 }, links: { enable: true, opacity: 0.05 } } });
+
+        // HÀM HIỂN THỊ ĐỊA CHỈ VÍ ĐÃ RÚT GỌN
+        function formatAddress(address) {
+            return address.slice(0, 6) + "..." + address.slice(-4);
+        }
+
         document.getElementById('connectBtn').onclick = async () => {
             if (window.ethereum) {
                 provider = new ethers.BrowserProvider(window.ethereum);
                 await provider.send("eth_requestAccounts", []);
                 signer = await provider.getSigner();
                 factoryContract = new ethers.Contract(FACTORY_ADDRESS, ABI, signer);
-                document.getElementById('uiContainer').classList.remove('hidden');
+                
                 const user = (await signer.getAddress()).toLowerCase();
+                document.getElementById('uiContainer').classList.remove('hidden');
+                
+                // CẬP NHẬT NÚT KẾT NỐI THÀNH ĐỊA CHỈ VÍ
+                document.getElementById('connectBtn').innerText = formatAddress(user);
+                document.getElementById('connectBtn').classList.replace('bg-white', 'bg-sky-500/20');
+                document.getElementById('connectBtn').classList.replace('text-slate-950', 'text-sky-400');
+                
                 if (user === ADMIN_WALLET) document.getElementById('withdrawBtn').classList.remove('hidden');
             }
         };
 
-        // Hàm 1: Deploy Contract Logic
+        // Deploy Logic (Trạng thái SENDING...)
         document.getElementById('btnLogic').onclick = async () => {
             try {
-                const tx = await factoryContract.deployLogic("ARCCODE LOGIC INSTANCE");
+                const btn = document.getElementById('btnLogic');
+                btn.innerText = "SENDING...";
+                btn.disabled = true;
+                const tx = await factoryContract.deployLogic("ARCCODE LOGIC");
                 await tx.wait();
+                btn.innerText = "Deploy Logic";
+                btn.disabled = false;
                 updateHistory();
-            } catch (e) { alert("Lỗi!"); }
+            } catch (e) { alert("Lỗi!"); document.getElementById('btnLogic').innerText = "Deploy Logic"; document.getElementById('btnLogic').disabled = false; }
         };
 
-        // Hàm 2: Create Token Random
+        // Create Token (Trạng thái SENDING... & Tokens Minted chuẩn)
         document.getElementById('btnAsset').onclick = async () => {
             try {
+                const btn = document.getElementById('btnAsset');
                 const n = `${pfx[Math.floor(Math.random()*pfx.length)]} ${mid[Math.floor(Math.random()*mid.length)]} ${sfx[Math.floor(Math.random()*sfx.length)]}`;
                 const s = n.split(' ').map(w => w[0]).join('').toUpperCase();
                 const q = Math.floor(Math.random() * 89000000) + 10000000;
+
+                btn.innerText = "SENDING...";
+                btn.disabled = true;
                 const tx = await factoryContract.deployAsset(n, s, q);
                 await tx.wait();
+                btn.innerText = "Create Token";
+                btn.disabled = false;
                 updateHistory();
-            } catch (e) { alert("Lỗi!"); }
+            } catch (e) { alert("Lỗi!"); document.getElementById('btnAsset').innerText = "Create Token"; document.getElementById('btnAsset').disabled = false; }
         };
 
         async function updateHistory() {
@@ -112,15 +147,14 @@
                 const start = count > 8n ? count - 8n : 0n;
                 for (let i = count - 1n; i >= start; i--) {
                     const addr = await factory.getEntity(i);
-                    list.innerHTML += `<div onclick="window.open('https://testnet.arcscan.app/address/${addr}', '_blank')" class="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex justify-between items-center cursor-pointer hover:bg-sky-500/5 transition">
-                        <span class="text-[10px] text-slate-600">ARC_ID #0${i}</span>
-                        <span class="text-xs text-sky-400 font-bold">${addr}</span>
+                    list.innerHTML += `<div onclick="window.open('https://testnet.arcscan.app/address/${addr}', '_blank')" class="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex justify-between items-center cursor-pointer hover:bg-sky-500/10 transition-all">
+                        <span class="text-[10px] text-slate-600 font-bold uppercase tracking-widest">ARC_ID #0${i}</span>
+                        <span class="text-xs text-sky-400">${addr}</span>
                     </div>`;
                 }
             } catch (e) {}
         }
 
-        tsParticles.load("tsparticles", { particles: { number: { value: 30 }, color: { value: "#38bdf8" }, move: { enable: true, speed: 0.5 }, opacity: { value: 0.1 }, links: { enable: true, opacity: 0.05 } } });
         updateHistory();
         setInterval(updateHistory, 15000);
     </script>
